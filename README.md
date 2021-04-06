@@ -77,15 +77,10 @@ def extract_features(directory):
 
 ```bash
   
-from sklearn.model_selection import KFold
-kf = KFold(n_splits=6)
 
-kf.get_n_splits(x)
-KFold(n_splits=6, random_state=None, shuffle=False)
-for train_index, test_index in kf.split(x):
-    print("TRAIN:", train_index, "TEST:", test_index)
-    X_train, X_test = x[train_index], x[test_index]
-    y_train, y_test = y[train_index], y[test_index]
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=.4,
+                                                    random_state=0)
 
 ```
 
@@ -93,42 +88,27 @@ for train_index, test_index in kf.split(x):
 
 ```bash
   
-#KNN classifier
-
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import cross_val_score
-clfknn = KNeighborsClassifier(n_neighbors=10)
-scores = cross_val_score(clfknn, x, y, cv=4)
-print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
-
-
-#svm classifier
+import scikitplot as skplt
 
 from sklearn.model_selection import cross_val_score
 from sklearn import svm
-clf = svm.SVC(kernel='linear')
-scoresvm = cross_val_score(clf, x, y, cv=4)
-scoresvm
-print("Accuracy: %0.2f (+/- %0.2f)" % (scoresvm.mean(), scoresvm.std() * 2))
+clf = svm.SVC(probability=True)
 
+#Train the model using the training sets
+clf.fit(X_train, y_train)
 
-#KNN classifier
+#Predict the response for test dataset
+y_pred = clf.predict(X_test)
+#Import scikit-learn metrics module for accuracy calculation
+from sklearn import metrics
 
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import cross_val_score
-clfknn = KNeighborsClassifier(n_neighbors=5)
-scores3 = cross_val_score(clfknn, x, y, cv=4)
-print("Accuracy: %0.2f (+/- %0.2f)" % (scores3.mean(), scores3.std() * 2))
-
-
-
-#random forest classifier
-
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score
-clfrf=RandomForestClassifier(n_estimators=150)
-scores4 = cross_val_score(clfrf, x, y, cv=4)
-print("Accuracy: %0.2f (+/- %0.2f)" % (scores4.mean(), scores4.std() * 2))
+# Model Accuracy: how often is the classifier correct?
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+y_probas =clf.predict_proba(X_test)
+import matplotlib.pyplot as plt
+import scikitplot as skplt
+skplt.metrics.plot_precision_recall_curve(y_test, y_probas)
+plt.show()
 
 ```
 
